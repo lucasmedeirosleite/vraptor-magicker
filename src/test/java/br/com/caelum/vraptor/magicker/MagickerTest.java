@@ -13,10 +13,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
+
+import br.com.caelum.vraptor.interceptor.multipart.UploadedFile;
 
 public class MagickerTest {
 
 	private Magicker magicker;
+	private UploadedFile file;
 	
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
@@ -24,6 +28,7 @@ public class MagickerTest {
 	@Before
 	public void setUp(){
 		magicker = new DefaultMagicker();
+		file = Mockito.mock(UploadedFile.class);
 	}
 	
 	@Test
@@ -78,6 +83,21 @@ public class MagickerTest {
 	public void should_return_magick_image_when_pass_byte_array() throws IOException, MagickException{
 		byte[] bytes = IOUtils.toByteArray(this.getClass().getResourceAsStream("caelum.png"));
 		MagickImage image = this.magicker.takeImageBytes(bytes).getImage();
+		assertNotNull(image);
+		assertThat(image.getImageFormat(), is(equalTo("PNG")));
+	}
+	
+	@Test
+	public void should_not_accept_null_uploaded_file(){
+		this.thrown.expect(MagickerException.class);
+		this.thrown.expectMessage("UploadedFile should not be null");
+		this.magicker.takeImageUploaded(null);
+	}
+	
+	@Test
+	public void should_return_magick_image_when_pass_uploaded_file() throws IOException, MagickException{
+		Mockito.when(file.getFile()).thenReturn(this.getClass().getResourceAsStream("caelum.png"));
+		MagickImage image = this.magicker.takeImageUploaded(file).getImage();
 		assertNotNull(image);
 		assertThat(image.getImageFormat(), is(equalTo("PNG")));
 	}

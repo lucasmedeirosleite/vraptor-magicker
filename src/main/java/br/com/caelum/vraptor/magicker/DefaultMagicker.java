@@ -11,6 +11,7 @@ import magick.MagickImage;
 
 import org.apache.commons.io.IOUtils;
 
+import br.com.caelum.vraptor.interceptor.multipart.UploadedFile;
 import br.com.caelum.vraptor.ioc.ApplicationScoped;
 import br.com.caelum.vraptor.ioc.Component;
 
@@ -19,10 +20,11 @@ import br.com.caelum.vraptor.ioc.Component;
 public class DefaultMagicker implements Magicker {
 	
 	private MagickImage image;
-
+	
 	@PostConstruct
 	public void load(){
 		System.setProperty("jmagick.systemclassloader","false");
+		
 	}
 	
 	@Override
@@ -89,6 +91,15 @@ public class DefaultMagicker implements Magicker {
 			e.printStackTrace();
 			throw new MagickerException(e.getMessage());
 		}
+	}
+
+	@Override
+	public Magicker takeImageUploaded(UploadedFile uploadedFile) {
+		if(uploadedFile == null){
+			throw new MagickerException("UploadedFile should not be null");
+		}
+		this.image = createImage(uploadedFile.getFile());
+		return this;
 	}
 
 }
