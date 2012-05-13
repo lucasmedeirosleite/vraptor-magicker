@@ -5,31 +5,39 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import magick.MagickException;
 import magick.MagickImage;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
+import br.com.caelum.vraptor.environment.Environment;
 import br.com.caelum.vraptor.interceptor.multipart.UploadedFile;
 
 public class MagickerTest {
 
+	private Environment environment;
 	private Magicker magicker;
 	private UploadedFile file;
+	private String path;
 	
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 	
 	@Before
 	public void setUp(){
-		magicker = new DefaultMagicker();
+		path = this.getClass().getResource("caelum.png").getPath().replace("/caelum.png", "");
+		environment = Mockito.mock(Environment.class);
+		magicker = new DefaultMagicker(environment);
 		file = Mockito.mock(UploadedFile.class);
 	}
 	
@@ -123,6 +131,62 @@ public class MagickerTest {
 		MagickImage image = this.magicker.takeImagePath(this.getClass().getResource("caelum.png").getPath()).getImage();
 		assertNotNull(image);
 		assertThat(image.getImageFormat(), is(equalTo("PNG")));
+	}
+	
+	@Test
+	public void should_not_accept_null_title(){
+		this.thrown.expect(MagickerException.class);
+		this.thrown.expectMessage("Title should not be null or empty");
+		InputStream imageStream = this.getClass().getResourceAsStream("caelum.png");
+		this.magicker.takeImageStream(imageStream).withTitle(null);
+		
+	}
+	
+	@Test
+	public void should_not_accept_empty_title(){
+		this.thrown.expect(MagickerException.class);
+		this.thrown.expectMessage("Title should not be null or empty");
+		InputStream imageStream = this.getClass().getResourceAsStream("caelum.png");
+		this.magicker.takeImageStream(imageStream).withTitle(null);
+		
+	}
+	
+	@Test
+	public void should_save_image_on_disk_using_path_defined_on_environment(){
+		Mockito.when(environment.get("magicker.images_path")).thenReturn(path);
+		
+		String title = "caelum2.png";
+		InputStream stream = this.getClass().getResourceAsStream("caelum.png");
+		this.magicker.takeImageStream(stream).withTitle(title).save();
+		assertNotNull(this.magicker.takeImagePath(path + "/" + title).getImage());
+		
+	}
+	
+	@Test
+	public void should_not_save_image_on_disk_when_not_provided_a_path_by_developer_and_environment(){
+		this.thrown.expect(MagickerException.class);
+		this.thrown.expectMessage("No path defined (check your environment key path (magicker.images_path) or tell the path using method withPath)");
+		Mockito.when(environment.get("magicker.images_path")).thenReturn(null);
+		
+		String title = "caelum2.png";
+		InputStream stream = this.getClass().getResourceAsStream("caelum.png");
+		this.magicker.takeImageStream(stream).withTitle(title).save();
+	}
+	
+	@Test
+	public void should_save_image_on_disk_using_path_defined_by_developer(){
+		String title = "caelum2.png";
+		InputStream stream = this.getClass().getResourceAsStream("caelum.png");
+		this.magicker.takeImageStream(stream).withPath(path).withTitle(title).save();
+		assertNotNull(this.magicker.takeImagePath(path + "/" + title).getImage());
+	}
+	
+	@After
+	public void tearDown(){
+		File file = new File(path + "/" + "caelum2.png");
+		if(file.exists()){
+			file.delete();
+		}
 	}
 	
 	

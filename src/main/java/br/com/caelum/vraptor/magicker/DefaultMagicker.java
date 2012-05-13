@@ -13,6 +13,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.google.common.base.Strings;
 
+import br.com.caelum.vraptor.environment.Environment;
 import br.com.caelum.vraptor.interceptor.multipart.UploadedFile;
 import br.com.caelum.vraptor.ioc.ApplicationScoped;
 import br.com.caelum.vraptor.ioc.Component;
@@ -22,20 +23,36 @@ import br.com.caelum.vraptor.ioc.Component;
 public class DefaultMagicker implements Magicker {
 	
 	private MagickImage image;
+	private String title;
+	private String path;
+	private final Environment environment;
 	
-	@PostConstruct
-	public void load(){
-		System.setProperty("jmagick.systemclassloader","false");
-		
+	public DefaultMagicker(Environment environment) {
+		this.environment = environment;
+	}
+
+	private MagickImage createImage(InputStream stream){
+		try {
+			byte[] imageBytes = IOUtils.toByteArray(stream);
+			return createImageUsingBytes(imageBytes);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new MagickerException(e.getMessage());
+		}
 	}
 	
-	@Override
-	public Magicker takeImageStream(InputStream imageStream) {
-		if(imageStream == null){
-			throw new MagickerException("Stream should not be null");
+	private MagickImage createImageUsingBytes(byte[] bytes){
+		
+		try {
+			ImageInfo info = new ImageInfo();
+			MagickImage image = new MagickImage();
+			image.allocateImage(info);
+			image.blobToImage(info, bytes);
+			return image;
+		} catch (MagickException e) {
+			e.printStackTrace();
+			throw new MagickerException(e.getMessage());
 		}
-		this.image = createImage(imageStream);
-		return this;
 	}
 
 	@Override
@@ -43,22 +60,18 @@ public class DefaultMagicker implements Magicker {
 		return this.image;
 	}
 
+	@PostConstruct
+	public void load(){
+		System.setProperty("jmagick.systemclassloader","false");
+		
+	}
+	
 	@Override
 	public Magicker resizeTo(int width, int height) {
 		try {
 			this.image = this.image.scaleImage(width, height);
 			return this;
 		} catch (MagickException e) {
-			e.printStackTrace();
-			throw new MagickerException(e.getMessage());
-		}
-	}
-	
-	private MagickImage createImage(InputStream stream){
-		try {
-			byte[] imageBytes = IOUtils.toByteArray(stream);
-			return createImageUsingBytes(imageBytes);
-		} catch (IOException e) {
 			e.printStackTrace();
 			throw new MagickerException(e.getMessage());
 		}
@@ -81,29 +94,6 @@ public class DefaultMagicker implements Magicker {
 		
 	}
 	
-	private MagickImage createImageUsingBytes(byte[] bytes){
-		
-		try {
-			ImageInfo info = new ImageInfo();
-			MagickImage image = new MagickImage();
-			image.allocateImage(info);
-			image.blobToImage(info, bytes);
-			return image;
-		} catch (MagickException e) {
-			e.printStackTrace();
-			throw new MagickerException(e.getMessage());
-		}
-	}
-
-	@Override
-	public Magicker takeImageUploaded(UploadedFile uploadedFile) {
-		if(uploadedFile == null){
-			throw new MagickerException("UploadedFile should not be null");
-		}
-		this.image = createImage(uploadedFile.getFile());
-		return this;
-	}
-
 	@Override
 	public Magicker takeImagePath(String path) {
 		if(Strings.isNullOrEmpty(path)){
@@ -119,5 +109,63 @@ public class DefaultMagicker implements Magicker {
 		
 		return this;
 	}
+
+	@Override
+	public Magicker takeImageStream(InputStream imageStream) {
+		if(imageStream == null){
+			throw new MagickerException("Stream should not be null");
+		}
+		this.image = createImage(imageStream);
+		return this;
+	}
+
+	@Override
+	public Magicker takeImageUploaded(UploadedFile uploadedFile) {
+		if(uploadedFile == null){
+			throw new MagickerException("UploadedFile should not be null");
+		}
+		this.image = createImage(uploadedFile.getFile());
+		return this;
+	}
+
+	@Override
+	public Magicker withTitle(String title) {
+		
+		if(Strings.isNullOrEmpty(title)){
+			throw new MagickerException("Title should not be null or empty");
+		}
+		
+		this.title = title;
+		return this;
+	}
+
+	@Override
+	public void save() {
+		
+		if(Strings.isNullOrEmpty(path)){
+			this.path = this.environment.get("magicker.images_path");
+		}
+		
+		if(Strings.isNullOrEmpty(path)){
+			throw new MagickerException("No path defined (check your environment key path (magicker.images_path) or tell the path using method withPath)");
+		}
+		
+		try {
+			ImageInfo info = new ImageInfo();
+			image.setFileName( this.path + "/" + title);
+			image.writeImage(info);
+		} catch (MagickException e) {
+			e.printStackTrace();
+			throw new MagickerException("Image could not be saved");
+		}
+		
+	}
+
+	@Override
+	public Magicker withPath(String path) {
+		this.path = path;
+		return this;
+	}
+	
 
 }

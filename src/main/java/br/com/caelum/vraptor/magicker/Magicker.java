@@ -8,16 +8,22 @@ import magick.MagickImage;
 
 public interface Magicker {
 
-	Magicker takeImageStream(InputStream imageStream);
-
 	MagickImage getImage();
 
 	Magicker resizeTo(int width, int height);
 
 	Magicker takeImageBytes(byte[] bytes);
 
+	Magicker takeImagePath(String path);
+
+	Magicker takeImageStream(InputStream imageStream);
+
 	Magicker takeImageUploaded(UploadedFile uploadedFile);
 
-	Magicker takeImagePath(String path);
+	Magicker withTitle(String title);
+
+	void save();
+
+	Magicker withPath(String path);
 
 }
