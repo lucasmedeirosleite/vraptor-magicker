@@ -68,4 +68,35 @@ public class DefaultMagicker implements Magicker {
 		
 	}
 
+	@Override
+	public Magicker takeImageBytes(byte[] bytes) {
+		
+		if(bytes == null){
+			throw new MagickerException("Bytes should not be null");
+		}
+		
+		if(bytes.length == 0){
+			throw new MagickerException("Bytes should not be empty");
+		}
+		
+		this.image = createImageUsingBytes(bytes);
+		
+		return this;
+		
+	}
+	
+	private MagickImage createImageUsingBytes(byte[] bytes){
+		
+		try {
+			ImageInfo info = new ImageInfo();
+			MagickImage image = new MagickImage();
+			image.allocateImage(info);
+			image.blobToImage(info, bytes);
+			return image;
+		} catch (MagickException e) {
+			e.printStackTrace();
+			throw new MagickerException(e.getMessage());
+		}
+	}
+
 }

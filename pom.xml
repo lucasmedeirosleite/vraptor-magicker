@@ -50,12 +50,6 @@
 			<version>2.2</version>
 		</dependency>
 
-		<dependency>
-			<groupId>jmagick</groupId>
-			<artifactId>jmagick</artifactId>
-			<version>6.5.7</version>
-		</dependency>
-
 		<!-- tests dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -65,9 +59,17 @@
 		</dependency>
 
 		<dependency>
+			<groupId>jmagick</groupId>
+			<artifactId>jmagick</artifactId>
+			<version>6.5.7</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-all</artifactId>
 			<version>1.1</version>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>

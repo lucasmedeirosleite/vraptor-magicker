@@ -12,4 +12,6 @@ public interface Magicker {
 
 	Magicker resizeTo(int width, int height);
 
+	Magicker takeImageBytes(byte[] bytes);
+
 }

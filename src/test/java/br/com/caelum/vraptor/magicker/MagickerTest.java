@@ -2,9 +2,13 @@ package br.com.caelum.vraptor.magicker;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.*;
+
+import java.io.IOException;
+
 import magick.MagickException;
 import magick.MagickImage;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,9 +34,10 @@ public class MagickerTest {
 	}
 	
 	@Test
-	public void should_return_magick_image(){
+	public void should_return_magick_image() throws MagickException{
 		MagickImage image = this.magicker.takeImageStream(this.getClass().getResourceAsStream("caelum.png")).getImage();
 		assertNotNull(image);
+		assertThat(image.getImageFormat(), is(equalTo("PNG")));
 	}
 	
 	@Test
@@ -53,6 +58,28 @@ public class MagickerTest {
 		assertThat(image.getDimension().getHeight(), is(equalTo(new Double(height))));
 		
 		
+	}
+	
+	@Test
+	public void should_not_accept_null_byte_array(){
+		this.thrown.expect(MagickerException.class);
+		this.thrown.expectMessage("Bytes should not be null");
+		this.magicker.takeImageBytes(null);
+	}
+	
+	@Test
+	public void should_not_accept_empty_byte_array(){
+		this.thrown.expect(MagickerException.class);
+		this.thrown.expectMessage("Bytes should not be empty");
+		this.magicker.takeImageBytes(new byte[0]);
+	}
+	
+	@Test
+	public void should_return_magick_image_when_pass_byte_array() throws IOException, MagickException{
+		byte[] bytes = IOUtils.toByteArray(this.getClass().getResourceAsStream("caelum.png"));
+		MagickImage image = this.magicker.takeImageBytes(bytes).getImage();
+		assertNotNull(image);
+		assertThat(image.getImageFormat(), is(equalTo("PNG")));
 	}
 	
 	
