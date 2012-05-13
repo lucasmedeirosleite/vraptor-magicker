@@ -2,6 +2,8 @@ package br.com.caelum.vraptor.magicker;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
@@ -22,9 +24,10 @@ import br.com.caelum.vraptor.ioc.Component;
 @ApplicationScoped
 public class DefaultMagicker implements Magicker {
 	
-	private MagickImage image;
+	private MagickImage original;
 	private String title;
 	private String path;
+	private List<ImageHolder> children;
 	private final Environment environment;
 	
 	public DefaultMagicker(Environment environment) {
@@ -57,19 +60,19 @@ public class DefaultMagicker implements Magicker {
 
 	@Override
 	public MagickImage getImage() {
-		return this.image;
+		return this.original;
 	}
 
 	@PostConstruct
 	public void load(){
 		System.setProperty("jmagick.systemclassloader","false");
-		
+		children = new ArrayList<ImageHolder>();
 	}
 	
 	@Override
 	public Magicker resizeTo(int width, int height) {
 		try {
-			this.image = this.image.scaleImage(width, height);
+			this.original = this.original.scaleImage(width, height);
 			return this;
 		} catch (MagickException e) {
 			e.printStackTrace();
@@ -88,7 +91,7 @@ public class DefaultMagicker implements Magicker {
 			throw new MagickerException("Bytes should not be empty");
 		}
 		
-		this.image = createImageUsingBytes(bytes);
+		this.original = createImageUsingBytes(bytes);
 		
 		return this;
 		
@@ -101,7 +104,7 @@ public class DefaultMagicker implements Magicker {
 		}
 		
 		try {
-			this.image = new MagickImage(new ImageInfo(path));
+			this.original = new MagickImage(new ImageInfo(path));
 		} catch (MagickException e) {
 			e.printStackTrace();
 			throw new MagickerException(e.getMessage());
@@ -115,7 +118,7 @@ public class DefaultMagicker implements Magicker {
 		if(imageStream == null){
 			throw new MagickerException("Stream should not be null");
 		}
-		this.image = createImage(imageStream);
+		this.original = createImage(imageStream);
 		return this;
 	}
 
@@ -124,7 +127,7 @@ public class DefaultMagicker implements Magicker {
 		if(uploadedFile == null){
 			throw new MagickerException("UploadedFile should not be null");
 		}
-		this.image = createImage(uploadedFile.getFile());
+		this.original = createImage(uploadedFile.getFile());
 		return this;
 	}
 
@@ -152,8 +155,19 @@ public class DefaultMagicker implements Magicker {
 		
 		try {
 			ImageInfo info = new ImageInfo();
-			image.setFileName( this.path + "/" + title);
-			image.writeImage(info);
+			original.setFileName( this.path + "/" + title);
+			original.writeImage(info);
+			
+			for (ImageHolder holder : children) {
+				
+				if(ImageType.THUMBNAIL == holder.getType()){
+					info = new ImageInfo();
+					holder.getImage().setFileName(this.path + "/thumb/" + title);
+					holder.getImage().writeImage(info);
+				}
+				
+			}
+			
 		} catch (MagickException e) {
 			e.printStackTrace();
 			throw new MagickerException("Image could not be saved");
@@ -165,6 +179,22 @@ public class DefaultMagicker implements Magicker {
 	public Magicker withPath(String path) {
 		this.path = path;
 		return this;
+	}
+
+	@Override
+	public Magicker addThumb() {
+		
+		int width = Integer.valueOf(this.environment.get("magicker.images.thumb.width"));
+		int height = Integer.valueOf(this.environment.get("magicker.images.thumb.height"));
+		
+		try {
+			children.add(new ImageHolder(original.scaleImage(width, height), ImageType.THUMBNAIL));
+			return this;
+		} catch (MagickException e) {
+			e.printStackTrace();
+			throw new MagickerException(e.getMessage());
+		}
+		
 	}
 	
 

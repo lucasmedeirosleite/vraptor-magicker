@@ -26,4 +26,6 @@ public interface Magicker {
 
 	Magicker withPath(String path);
 
+	Magicker addThumb();
+
 }

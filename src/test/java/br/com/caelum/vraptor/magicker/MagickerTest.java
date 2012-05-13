@@ -26,9 +26,10 @@ import br.com.caelum.vraptor.interceptor.multipart.UploadedFile;
 public class MagickerTest {
 
 	private Environment environment;
-	private Magicker magicker;
+	private DefaultMagicker magicker;
 	private UploadedFile file;
 	private String path;
+	
 	
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
@@ -39,6 +40,7 @@ public class MagickerTest {
 		environment = Mockito.mock(Environment.class);
 		magicker = new DefaultMagicker(environment);
 		file = Mockito.mock(UploadedFile.class);
+		magicker.load();
 	}
 	
 	@Test
@@ -63,7 +65,6 @@ public class MagickerTest {
 	
 	@Test
 	public void should_resize_image() throws MagickException{
-		
 		int width = 300;
 		int height = 350;
 		
@@ -71,8 +72,6 @@ public class MagickerTest {
 		
 		assertThat(image.getDimension().getWidth(), is(equalTo(new Double(width))));
 		assertThat(image.getDimension().getHeight(), is(equalTo(new Double(height))));
-		
-		
 	}
 	
 	@Test
@@ -148,7 +147,6 @@ public class MagickerTest {
 		this.thrown.expectMessage("Title should not be null or empty");
 		InputStream imageStream = this.getClass().getResourceAsStream("caelum.png");
 		this.magicker.takeImageStream(imageStream).withTitle(null);
-		
 	}
 	
 	@Test
@@ -179,6 +177,25 @@ public class MagickerTest {
 		InputStream stream = this.getClass().getResourceAsStream("caelum.png");
 		this.magicker.takeImageStream(stream).withPath(path).withTitle(title).save();
 		assertNotNull(this.magicker.takeImagePath(path + "/" + title).getImage());
+	}
+	
+	@Test
+	public void should_save_and_its_thumbnail_with_width_and_height_defined_on_environment() throws MagickException{
+	
+		Mockito.when(environment.get("magicker.images_path")).thenReturn("/Users/lucasmedeiros/Desenvolvimento/images");
+		int width = 30;
+		int height = 30;
+		Mockito.when(environment.get("magicker.images.thumb.width")).thenReturn(String.valueOf(width));
+		Mockito.when(environment.get("magicker.images.thumb.height")).thenReturn(String.valueOf(height));
+		
+		String title = "caelum2.png";
+		InputStream stream = this.getClass().getResourceAsStream("caelum.png");
+		this.magicker.takeImageStream(stream).withTitle(title).addThumb().save();
+		
+		MagickImage thumbImage = this.magicker.takeImagePath("/Users/lucasmedeiros/Desenvolvimento/images" + "/thumb/" + title).getImage();
+		assertThat(thumbImage.getDimension().getWidth(), is(equalTo(new Double(width))));
+		assertThat(thumbImage.getDimension().getHeight(), is(equalTo(new Double(height))));
+		
 	}
 	
 	@After
