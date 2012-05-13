@@ -18,7 +18,7 @@ import br.com.caelum.vraptor.ioc.Component;
 @ApplicationScoped
 public class DefaultMagicker implements Magicker {
 	
-	private InputStream stream;
+	private MagickImage image;
 
 	@PostConstruct
 	public void load(){
@@ -30,27 +30,42 @@ public class DefaultMagicker implements Magicker {
 		if(imageStream == null){
 			throw new MagickerException("Stream should not be null");
 		}
-		this.stream = imageStream;
+		this.image = createImage(imageStream);
 		return this;
 	}
 
 	@Override
 	public MagickImage getImage() {
-		
+		return this.image;
+	}
+
+	@Override
+	public Magicker resizeTo(int width, int height) {
 		try {
-			byte[] imageBytes = IOUtils.toByteArray(this.stream);
-			ImageInfo info = new ImageInfo();
-			MagickImage image = new MagickImage();
-			image.allocateImage(info);
-			image.blobToImage(info, imageBytes);
-			return image; 
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new MagickerException(e.getMessage());
+			this.image = this.image.scaleImage(width, height);
+			return this;
 		} catch (MagickException e) {
 			e.printStackTrace();
 			throw new MagickerException(e.getMessage());
 		}
+	}
+	
+	private MagickImage createImage(InputStream stream){
+		try {
+			byte[] imageBytes = IOUtils.toByteArray(stream);
+			ImageInfo info = new ImageInfo();
+			MagickImage image = new MagickImage();
+			image.allocateImage(info);
+			image.blobToImage(info, imageBytes);
+			return image;
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new MagickerException(e.getMessage());
+		}catch (MagickException e) {
+			e.printStackTrace();
+			throw new MagickerException(e.getMessage());
+		}
+		
 	}
 
 }

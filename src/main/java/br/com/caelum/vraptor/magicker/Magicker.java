@@ -10,4 +10,6 @@ public interface Magicker {
 
 	MagickImage getImage();
 
+	Magicker resizeTo(int width, int height);
+
 }
