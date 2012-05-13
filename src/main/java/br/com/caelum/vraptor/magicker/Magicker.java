@@ -18,4 +18,6 @@ public interface Magicker {
 
 	Magicker takeImageUploaded(UploadedFile uploadedFile);
 
+	Magicker takeImagePath(String path);
+
 }

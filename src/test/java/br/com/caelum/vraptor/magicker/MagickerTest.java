@@ -1,7 +1,9 @@
 package br.com.caelum.vraptor.magicker;
 
-import static org.junit.Assert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 
@@ -98,6 +100,27 @@ public class MagickerTest {
 	public void should_return_magick_image_when_pass_uploaded_file() throws IOException, MagickException{
 		Mockito.when(file.getFile()).thenReturn(this.getClass().getResourceAsStream("caelum.png"));
 		MagickImage image = this.magicker.takeImageUploaded(file).getImage();
+		assertNotNull(image);
+		assertThat(image.getImageFormat(), is(equalTo("PNG")));
+	}
+	
+	@Test
+	public void should_not_accept_null_path(){
+		this.thrown.expect(MagickerException.class);
+		this.thrown.expectMessage("Path should not be null or empty");
+		this.magicker.takeImagePath(null);
+	}
+	
+	@Test
+	public void should_not_accept_empty_path(){
+		this.thrown.expect(MagickerException.class);
+		this.thrown.expectMessage("Path should not be null or empty");
+		this.magicker.takeImagePath("");
+	}
+	
+	@Test
+	public void should_return_magick_image_when_pass_image_path() throws IOException, MagickException{
+		MagickImage image = this.magicker.takeImagePath(this.getClass().getResource("caelum.png").getPath()).getImage();
 		assertNotNull(image);
 		assertThat(image.getImageFormat(), is(equalTo("PNG")));
 	}

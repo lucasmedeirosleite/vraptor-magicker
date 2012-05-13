@@ -11,6 +11,8 @@ import magick.MagickImage;
 
 import org.apache.commons.io.IOUtils;
 
+import com.google.common.base.Strings;
+
 import br.com.caelum.vraptor.interceptor.multipart.UploadedFile;
 import br.com.caelum.vraptor.ioc.ApplicationScoped;
 import br.com.caelum.vraptor.ioc.Component;
@@ -99,6 +101,22 @@ public class DefaultMagicker implements Magicker {
 			throw new MagickerException("UploadedFile should not be null");
 		}
 		this.image = createImage(uploadedFile.getFile());
+		return this;
+	}
+
+	@Override
+	public Magicker takeImagePath(String path) {
+		if(Strings.isNullOrEmpty(path)){
+			throw new MagickerException("Path should not be null or empty");
+		}
+		
+		try {
+			this.image = new MagickImage(new ImageInfo(path));
+		} catch (MagickException e) {
+			e.printStackTrace();
+			throw new MagickerException(e.getMessage());
+		}
+		
 		return this;
 	}
 
