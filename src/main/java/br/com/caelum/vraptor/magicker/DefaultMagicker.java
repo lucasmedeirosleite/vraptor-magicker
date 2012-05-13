@@ -53,19 +53,11 @@ public class DefaultMagicker implements Magicker {
 	private MagickImage createImage(InputStream stream){
 		try {
 			byte[] imageBytes = IOUtils.toByteArray(stream);
-			ImageInfo info = new ImageInfo();
-			MagickImage image = new MagickImage();
-			image.allocateImage(info);
-			image.blobToImage(info, imageBytes);
-			return image;
+			return createImageUsingBytes(imageBytes);
 		} catch (IOException e) {
 			e.printStackTrace();
 			throw new MagickerException(e.getMessage());
-		}catch (MagickException e) {
-			e.printStackTrace();
-			throw new MagickerException(e.getMessage());
 		}
-		
 	}
 
 	@Override
