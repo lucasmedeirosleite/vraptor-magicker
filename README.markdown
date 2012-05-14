@@ -19,7 +19,7 @@
 	
 	-After that download the latest jmagick source from svn running: svn co https://jmagick.svn.sourceforge.net/svnroot/jmagick jmagick
 	-Then run the following commands:
-		./configure –with-java-home=/System/Library/Frameworks/JavaVM.framework/Versions/Current –with-magick-home=/usr/local/jmagick
+		./configure --with-java-home=/System/Library/Frameworks/JavaVM.framework/Versions/Current --with-magick-home=/usr/local/jmagick
 		make all & make install
 		ln -s /usr/local/lib/libJMagick-6.5.7.so /Library/Java/Extensions/libJMagick.jnilib
 		
