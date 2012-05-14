@@ -17,6 +17,8 @@ public interface Magicker {
 
 	List<MagickImage> getChildren();
 
+	String getFullPathOf(ImageType type);
+
 	MagickImage getImage();
 
 	Magicker resizeTo(int width, int height);
@@ -26,15 +28,13 @@ public interface Magicker {
 	Magicker takeImageBytes(byte[] bytes);
 
 	Magicker takeImagePath(String path);
-
-	Magicker takeImageStream(InputStream imageStream);
 	
+	Magicker takeImageStream(InputStream imageStream);
+
 	Magicker takeImageUploaded(UploadedFile uploadedFile);
 
 	Magicker withPath(String path);
-
-	Magicker withTitle(String title);
 	
-	String getFullPathOf(ImageType type);
+	Magicker withTitle(String title);
 
 }
