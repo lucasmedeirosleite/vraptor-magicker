@@ -9,7 +9,7 @@
 
 		<dependency>
 			<groupId>br.com.caelum.vraptor</groupId>
-			<artifactId>vraptor-cep</artifactId>
+			<artifactId>vraptor-magicker</artifactId>
 			<version>1.0.0</version>
 			<scope>compile</scope>
 		</dependency>
