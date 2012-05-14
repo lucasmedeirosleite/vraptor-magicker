@@ -4,7 +4,7 @@
 	<groupId>br.com.caelum.vraptor</groupId>
 	<artifactId>vraptor-magicker</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0</version>
+	<version>1.0.0</version>
 	<name>vraptor-magicker</name>
 
 	<properties>

@@ -1,7 +1,7 @@
 package br.com.caelum.vraptor.magicker;
 
-enum ImageType {
+public enum ImageType {
 
-	THUMBNAIL, MEDIUM;
+	ORIGINAL, THUMBNAIL, MEDIUM, CUSTOM;
 	
 }

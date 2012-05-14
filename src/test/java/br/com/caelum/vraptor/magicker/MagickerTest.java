@@ -30,7 +30,6 @@ public class MagickerTest {
 	private UploadedFile file;
 	private String path;
 	
-	
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 	
@@ -38,8 +37,8 @@ public class MagickerTest {
 	public void setUp(){
 		path = this.getClass().getResource("caelum.png").getPath().replace("/caelum.png", "");
 		environment = Mockito.mock(Environment.class);
-		magicker = new DefaultMagicker(environment);
 		file = Mockito.mock(UploadedFile.class);
+		magicker = new DefaultMagicker(environment);
 		magicker.load();
 	}
 	
@@ -193,6 +192,42 @@ public class MagickerTest {
 		this.magicker.takeImageStream(stream).withTitle(title).addThumb().save();
 		
 		MagickImage thumbImage = this.magicker.takeImagePath("/Users/lucasmedeiros/Desenvolvimento/images" + "/thumb/" + title).getImage();
+		assertThat(thumbImage.getDimension().getWidth(), is(equalTo(new Double(width))));
+		assertThat(thumbImage.getDimension().getHeight(), is(equalTo(new Double(height))));
+		
+	}
+	
+	@Test
+	public void should_save_and_its_medium_with_width_and_height_defined_on_environment() throws MagickException{
+	
+		Mockito.when(environment.get("magicker.images_path")).thenReturn("/Users/lucasmedeiros/Desenvolvimento/images");
+		int width = 160;
+		int height = 160;
+		Mockito.when(environment.get("magicker.images.medium.width")).thenReturn(String.valueOf(width));
+		Mockito.when(environment.get("magicker.images.medium.height")).thenReturn(String.valueOf(height));
+		
+		String title = "caelum2.png";
+		InputStream stream = this.getClass().getResourceAsStream("caelum.png");
+		this.magicker.takeImageStream(stream).withTitle(title).addMedium().save();
+		
+		MagickImage thumbImage = this.magicker.takeImagePath("/Users/lucasmedeiros/Desenvolvimento/images" + "/medium/" + title).getImage();
+		assertThat(thumbImage.getDimension().getWidth(), is(equalTo(new Double(width))));
+		assertThat(thumbImage.getDimension().getHeight(), is(equalTo(new Double(height))));
+		
+	}
+	
+	@Test
+	public void should_save_and_its_custom_with_width_and_height() throws MagickException{
+	
+		Mockito.when(environment.get("magicker.images_path")).thenReturn("/Users/lucasmedeiros/Desenvolvimento/images");
+		int width = 500;
+		int height = 300;
+		
+		String title = "caelum2.png";
+		InputStream stream = this.getClass().getResourceAsStream("caelum.png");
+		this.magicker.takeImageStream(stream).withTitle(title).addCustom(width, height).save();
+		
+		MagickImage thumbImage = this.magicker.takeImagePath("/Users/lucasmedeiros/Desenvolvimento/images" + "/custom/" + title).getImage();
 		assertThat(thumbImage.getDimension().getWidth(), is(equalTo(new Double(width))));
 		assertThat(thumbImage.getDimension().getHeight(), is(equalTo(new Double(height))));
 		
