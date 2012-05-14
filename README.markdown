@@ -93,6 +93,23 @@
 			
 			this.magicker.takeImageStream(stream).withPath(path).withTitle(title).addThumb().addMedium().addCustom(500, 600).save();
 			
+	 - Receiving the Magicker object:
+	
+				@Resource
+			    public class MyController {
+
+			        private Magicker magicker;
+
+			        public MeuController(Magicker magicker) {
+			            this.magicker = magicker;
+			        }
+
+			        public void saveImage(UploadedFile file) {
+			            this.magicker.takeImageUploaded(file).addThumb().addMedium().addCustom(500, 600).save();
+			        }
+
+			    }
+			
 	IMPORTANT:
 	
 			Thumbnails will be saved in a sub-directory called thumb
